@@ -2,17 +2,11 @@ import numpy as np
 import cv2
 
 def read_image_and_get_pixels(image_path):
-	"""[pixel_table] = read_image_and_get_pixels(f): loads image in greyscale and returns a table of pixels
+	"""[pixel_table] = read_image_and_get_pixels(f): Load image in greyscale and return pixel values
 	% image_path : path to the image
 	"""
-	img = cv2.imread(image_path)
-	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-	pixel_table = img
-
-	return pixel_table
-
-
+	img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Load directly as grayscale
+	return img.astype(np.float32)  	
 
 def grad(f):
 	"""[v,h] = grad(f): computes spatial gradients of image f
@@ -52,22 +46,22 @@ def div(v,h):
 
 	return f
 
-
 def projballl2(xr, z, rho, indI):
-	"""
-	%projection of xr onto the l2 semi-ball || x(indI)-z(indI) || <= rho
+    """ %projection of xr onto the l2 semi-ball || x(indI)-z(indI) || <= rho
 	% xr : vector to be projected
 	% z : center of the ball
 	% rho : radius of the ball
 	% indI : indices of the contrained components
 	% p : computed projection
 	"""
+    diff = xr[indI] - z[indI]
+    norm_diff = np.linalg.norm(diff)
+    
+    if norm_diff > rho:
+        diff = (rho / norm_diff) * diff
 
-	no = np.linalg.norm( xr[indI] - z[indI] )
-
-	p = np.copy(xr)
-
-	if no > rho:
-	    p[indI] = 0 # TO BE COMPLETED
-
-	return p
+        xr_proj = xr.copy()
+        xr_proj[indI] = z[indI] + diff
+        return xr_proj
+    else:
+        return xr.copy()
